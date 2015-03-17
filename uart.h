@@ -11,11 +11,12 @@
 /* Defines & Macros */
 /********************/
 /* Total UART port amount */
-#define UART_PORT_NUM   (3)
+#define UART_PORT_NUM   (4)
 /* Defines of UART port number */
 #define UART_PORT_CB    (0)
 #define UART_PORT_PB    (1)
 #define UART_PORT_USER  (2)
+#define UART_PORT_USER2 (3)
 
 /* Defines of function return value */
 #define UART_OK             (0)

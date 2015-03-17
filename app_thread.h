@@ -20,5 +20,6 @@
 /*************/
 void thread_spi_receive(void);
 void thread_uart_pb_receive(void);
+void thread_timer(void);
 
 #endif/* _APP_THREAD_H_ */

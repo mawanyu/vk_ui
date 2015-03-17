@@ -22,6 +22,7 @@
 #define UART_PATH_CB    "/dev/ttymxc0"
 #define UART_PATH_PB    "/dev/ttymxc2"
 #define UART_PATH_USER  "/dev/ttymxc3"
+#define UART_PATH_USER2 "/dev/ttymxc4"
 
 /*************/
 /* Variables */
@@ -280,6 +281,89 @@ U3_EXIT_OPEN:
 }
 
 
+static int uart_user2_init(void)
+{
+    struct termios tio;
+    int ret = 0;
+    int fd = 0;
+
+    fd = open(UART_PATH_USER2, O_RDWR|O_NOCTTY|O_NDELAY);
+    if(fd < 0) {
+        printf("[Caution]Open UART USER2 port fail.\n");
+        goto U4_EXIT_OPEN;
+    }
+
+    /* Get UART port attribution. */
+    ret = tcgetattr(fd, &tio);
+    if(ret != 0) {
+        DEBUG_PRINTF("<%s>Get UART4 attr fail.\n", __FUNCTION__);
+        goto U4_EXIT_FAIL;
+    }
+
+#if 0
+    bzero((void*)&tio, sizeof(tio));
+    
+    tio.c_cflag |= (CLOCAL | CREAD);
+    tio.c_cflag &= ~CSIZE;
+    tio.c_cflag |= CS8;
+    tio.c_cflag &= ~PARENB;
+    tio.c_cflag &= ~CSTOPB;
+#endif
+    /* Set UART as 'raw' mode. Input is 8 bits/1 stop/no parity, /*
+    /* and no special functions*/
+    cfmakeraw(&tio);
+
+    /* Set minimum 8 bytes as read() uart returns, and there is no timeout */
+    /* before read() returns. */
+    //tio.c_cc[VTIME] = 0;
+    //tio.c_cc[VMIN]  = 8;
+
+    /* Setup UART baudrates. */
+    //input
+    ret = cfsetispeed(&tio, B115200);
+    if(ret != 0) {
+        DEBUG_PRINTF("<%s>Set UART4 input speed fail.\n", __FUNCTION__);
+        goto U4_EXIT_FAIL;
+    }
+    //output
+    ret = cfsetospeed(&tio, B115200);
+    if(ret != 0) {
+        DEBUG_PRINTF("<%s>Set UART4 output speed fail.\n", __FUNCTION__);
+        goto U4_EXIT_FAIL;
+    }
+
+    /* Flush io port. */
+    ret = tcflush(fd, TCIOFLUSH);
+    if(ret < 0) {
+        DEBUG_PRINTF("<%s>Flush UART4 port fail.\n", __FUNCTION__);
+        goto U4_EXIT_FAIL;
+    }
+
+    /* Set UART port attribution. */
+    ret = tcsetattr(fd, TCSANOW, &tio);
+    if(ret < 0) {
+        DEBUG_PRINTF("<%s>Set UART4 attr fail.\n", __FUNCTION__);
+        goto U4_EXIT_FAIL;
+    }
+
+    ret = fcntl(fd, F_SETFL, 0);
+    if(ret < 0) {
+        DEBUG_PRINTF("<%s>fcntl fail.\n", __FUNCTION__);
+        goto U4_EXIT_FAIL;
+    }
+
+    /* Store fd and return. */
+    uart_fd[UART_PORT_USER2] = fd;
+    return (UART_OK);
+    
+U4_EXIT_FAIL:
+    close(fd);
+U4_EXIT_OPEN:
+    uart_fd[UART_PORT_USER2] = -1;
+    return (UART_FAIL);
+}
+
+
 int uart_initialise(void)
 {
     int ret = 0;
@@ -287,6 +371,7 @@ int uart_initialise(void)
     ret += uart_cb_init();
     ret += uart_pb_init();
     ret += uart_user_init();
+    ret += uart_user2_init();
 
     return ret;
 }

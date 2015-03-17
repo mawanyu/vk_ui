@@ -16,11 +16,12 @@
 #include <malloc.h>
 #include <memory.h>
 #include <poll.h>
+#include <unistd.h>
+#include <signal.h>
 //#include <fcntl.h>
-//#include <sys/time.h>
+#include <sys/time.h>
 //#include <sys/types.h>
 //#include <sys/ioctl.h>
-#include <unistd.h>
 
 /********************/
 /* Defines & Macros */
@@ -50,6 +51,9 @@ void thread_spi_receive(void)
         return;
     }
 
+    //dummy read to clear status
+    read(gpio_spi_ready_fd, &ret, 1);
+
     while(1) {
         memset((void *)spi_rx_data, 0, SPI_TRANS_BYTES);
         memset((void *)&fd_set, 0, sizeof(fd_set));
@@ -72,6 +76,9 @@ void thread_spi_receive(void)
                 }
 
                 push_data_buffer(sys_received_cache, spi_rx_data, SPI_TRANS_BYTES);
+
+                //clear interrupt status
+                read(fd_set.fd, &ret, 1);
             }
             else {
                 DEBUG_PRINTF("<%s>Poll error.\n", __FUNCTION__);
@@ -99,3 +106,44 @@ void thread_uart_pb_receive(void)
     }
 }
 
+int dummy_cnt = 1;
+void dummy(void)
+{
+    printf("Timer reached, count = %d\n", dummy_cnt);
+    dummy_cnt++;
+    signal(SIGALRM, dummy);
+    sem_post(&timer_sem);
+}
+
+void thread_timer(void)
+{
+    int ret = 0;
+    struct itimerval timer;
+
+    /* Initialise timer semaphore. */
+    ret = sem_init(&timer_sem, 0, 0);
+    if(ret != 0) {
+        printf("<%s>Initialise timer semaphore fail.\n", __FUNCTION__);
+        pthread_exit(NULL);
+    }
+    
+    /* Registe function to SLGALRM. */
+    signal(SIGALRM, dummy);
+
+    /* Set timer interval to 0.1s. */
+    memset((void*)&timer, 0, sizeof(timer));
+    timer.it_value.tv_sec  = 0;
+    timer.it_value.tv_usec = 100*1000;
+    timer.it_interval.tv_sec  = 0;
+    timer.it_interval.tv_usec = 100*1000;
+    ret = setitimer(ITIMER_REAL, &timer, NULL);
+    if(ret != 0) {
+        printf("<%s>Set 0.1s timer fail.\n", __FUNCTION__);
+        pthread_exit(NULL);
+    }
+
+    /* Wait for timer signal. */
+    while(1) {
+        sem_wait(&timer_sem);
+    }
+}

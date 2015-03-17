@@ -413,11 +413,18 @@ int gpio_initialise(void)
 {
     int ret = GPIO_OK;
     unsigned int value;
+    int fd = 0;
 
-    ret = gpio_export(GPIO_NUM_NURSECALL);
-    if(ret != GPIO_OK) {
-        DEBUG_PRINTF("<%s>Export GPIO of nurse call error.\n", __FUNCTION__);
-        return (-1);
+    ret = gpio_open(GPIO_NUM_NURSECALL, &fd);
+    if(ret == GPIO_OK) {
+        gpio_close(fd);
+    }
+    else {
+        ret = gpio_export(GPIO_NUM_NURSECALL);
+        if(ret != GPIO_OK) {
+            DEBUG_PRINTF("<%s>Export GPIO of nurse call error.\n", __FUNCTION__);
+            return (-1);
+        }
     }
 
     ret = gpio_set_direction(GPIO_NUM_NURSECALL, GPIO_DIRECTION_LOW);
@@ -426,10 +433,16 @@ int gpio_initialise(void)
         goto EXIT_NC;
     }
 
-    ret = gpio_export(GPIO_NUM_AUDIO_EN);
-    if(ret != GPIO_OK) {
-        DEBUG_PRINTF("<%s>Export GPIO of audio enable error.\n", __FUNCTION__);
-        goto EXIT_NC;
+    ret = gpio_open(GPIO_NUM_AUDIO_EN, &fd);
+    if(ret == GPIO_OK) {
+        gpio_close(fd);
+    }
+    else {
+        ret = gpio_export(GPIO_NUM_AUDIO_EN);
+        if(ret != GPIO_OK) {
+            DEBUG_PRINTF("<%s>Export GPIO of audio enable error.\n", __FUNCTION__);
+            goto EXIT_NC;
+        }
     }
 
     ret = gpio_set_direction(GPIO_NUM_AUDIO_EN, GPIO_DIRECTION_LOW);
@@ -438,15 +451,21 @@ int gpio_initialise(void)
         goto EXIT_AE;
     }
 
-    ret = gpio_export(GPIO_NUM_SPI_READY);
-    if(ret != GPIO_OK) {
-        DEBUG_PRINTF("<%s>Export GPIO of spi ready interrupt error.\n", __FUNCTION__);
-        goto EXIT_AE;
+    ret = gpio_open(GPIO_NUM_SPI_READY, &fd);
+    if(ret == GPIO_OK) {
+        gpio_close(fd);
+    }
+    else {
+        ret = gpio_export(GPIO_NUM_SPI_READY);
+        if(ret != GPIO_OK) {
+            DEBUG_PRINTF("<%s>Export GPIO of spi ready interrupt error.\n", __FUNCTION__);
+            goto EXIT_AE;
+        }
     }
 
-    ret = gpio_set_direction(GPIO_NUM_SPI_READY, GPIO_DIRECTION_IN);
+    ret = gpio_set_edge(GPIO_NUM_SPI_READY, GPIO_EDGE_NONE);
+    ret += gpio_set_direction(GPIO_NUM_SPI_READY, GPIO_DIRECTION_IN);
     ret += gpio_set_edge(GPIO_NUM_SPI_READY, GPIO_EDGE_FALLING);
-    ret += gpio_get_value(GPIO_NUM_SPI_READY, &value);
     if(ret != GPIO_OK) {
         DEBUG_PRINTF("<%s>Setup spi ready error.\n", __FUNCTION__);
         goto EXIT_SR;
@@ -455,10 +474,10 @@ int gpio_initialise(void)
     return 0;
 
 EXIT_SR:
-    gpio_unexport(GPIO_NUM_SPI_READY);
+    //gpio_unexport(GPIO_NUM_SPI_READY);
 EXIT_AE:
-    gpio_unexport(GPIO_NUM_AUDIO_EN);
+    //gpio_unexport(GPIO_NUM_AUDIO_EN);
 EXIT_NC:
-    gpio_unexport(GPIO_NUM_NURSECALL);
+    //gpio_unexport(GPIO_NUM_NURSECALL);
     return (GPIO_FAIL);
 }

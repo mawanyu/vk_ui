@@ -7,6 +7,7 @@
 /*****************/
 /* Include Files */
 /*****************/
+#include <semaphore.h>  //for sem_t
 
 /********************/
 /* Defines & Macros */
@@ -22,6 +23,7 @@
 typedef struct {
     char *data;
     unsigned int size;
+    char *p_start;
     char *p_end;
     char *p_push;
     char *p_pop;
@@ -35,6 +37,32 @@ typedef struct {
 /*************/
 /* Buffer for received data from spi and uart. */
 extern CHAR_DATA_BUFFER sys_received_cache;
+
+/* Timer semaphore. Used by timer thread and alarm sub function. */
+extern sem_t timer_sem;
+
+extern char patient_trigger_run;
+
+extern unsigned long cb_alarm_info;
+extern unsigned int  pb_alarm_info;
+
+extern unsigned long cb_sys_status;
+
+extern char cb_handshake;              //标志控制板是否向接口板发送的握手信号
+extern char cb_trans_rt_data;          //标志控制板是否向接口板发送实时数据
+
+struct sys_rtc_struct {
+    unsigned long value;
+    char year;
+    char mon;
+    char day;
+    char hour;
+    char min;
+    char sec;
+    char update;
+};
+
+extern struct sys_rtc_struct sys_rtc;
 
 /*************/
 /* Functions */
