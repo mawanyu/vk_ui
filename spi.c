@@ -24,7 +24,7 @@
 //#define SPI_INTERRUPT_TRIGGER
 
 #define SPI_BITS_PER_WORD	(16)
-#define SPI_SPEED			(8000000)
+#define SPI_SPEED			(6000000)
 
 /*************/
 /* Variables */

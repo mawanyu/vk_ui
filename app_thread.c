@@ -51,8 +51,6 @@ void thread_spi_receive(void)
         return;
     }
 
-    //dummy read to clear status
-    read(gpio_spi_ready_fd, &ret, 1);
 
     while(1) {
         memset((void *)spi_rx_data, 0, SPI_TRANS_BYTES);
@@ -69,6 +67,9 @@ void thread_spi_receive(void)
         }
         else {
             if(fd_set.revents & POLLPRI) {
+                //clear interrupt status
+                read(fd_set.fd, &ret, 1);
+
                 ret = spi_transfer(NULL, spi_rx_data, SPI_TRANS_BYTES);
                 if(ret != 0) {
                     DEBUG_PRINTF("<%s>Get data from spi fail.\n", __FUNCTION__);
@@ -76,9 +77,6 @@ void thread_spi_receive(void)
                 }
 
                 push_data_buffer(sys_received_cache, spi_rx_data, SPI_TRANS_BYTES);
-
-                //clear interrupt status
-                read(fd_set.fd, &ret, 1);
             }
             else {
                 DEBUG_PRINTF("<%s>Poll error.\n", __FUNCTION__);

@@ -67,7 +67,8 @@ extern struct sys_rtc_struct sys_rtc;
 /*************/
 /* Functions */
 /*************/
-extern int push_data_buffer(CHAR_DATA_BUFFER buffer,char * data,unsigned int num);
-extern int pop_data_buffer(CHAR_DATA_BUFFER buffer,char * data,unsigned int num);
+extern int push_data_buffer(CHAR_DATA_BUFFER * buffer,char * data,unsigned int num);
+extern int pop_data_buffer(CHAR_DATA_BUFFER * buffer,char * data,unsigned int num);
+extern int pop_data_buffer_package(CHAR_DATA_BUFFER * buffer,char * package);
 
 #endif/*_COMMON_H_*/

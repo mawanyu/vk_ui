@@ -99,17 +99,17 @@ int main(int argc, char *argv[])
             memset((void*)tpack, 0x0, 4);
             memset((void*)&tpackdata, 0x0, sizeof(tpackdata));
             
-            ret = pop_data_buffer_package(sys_received_cache, tpack);
+            ret = pop_data_buffer_package(&sys_received_cache, tpack);
             if(ret != 0) {
-                printf("[Error]Pop data from received buffer fail.\t%s\n", strerror(ret));
+                printf("[Error]Pop data from received buffer fail. (%d)\n", ret);
             }
             ret = dp_decode_package(tpack, &tpackdata);
             if(ret != 0) {
-                printf("[Error]Decode a tranmit package fail.\t%s\n", strerror(ret));
+                printf("[Error]Decode a tranmit package fail. (%d)\n", ret);
             }
             ret = dp_sort_package(&tpackdata);
             if(ret != 0) {
-                printf("[Error]Sort package data fail.\t%s\n", strerror(ret));
+                printf("[Error]Sort package data fail. (%d)\n", ret);
             }
         }
 

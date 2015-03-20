@@ -19,9 +19,9 @@
 /********************/
 /* Defines & Macros */
 /********************/
-#define UART_PATH_CB    "/dev/ttymxc0"
-#define UART_PATH_PB    "/dev/ttymxc2"
-#define UART_PATH_USER  "/dev/ttymxc3"
+#define UART_PATH_CB    "/dev/ttymxc2"
+#define UART_PATH_PB    "/dev/ttymxc3"
+#define UART_PATH_USER  "/dev/ttymxc0"
 #define UART_PATH_USER2 "/dev/ttymxc4"
 
 /*************/
@@ -71,13 +71,13 @@ static int uart_cb_init(void)
 
     /* Setup UART baudrates. */
     //input
-    ret = cfsetispeed(&tio, B57600);
+    ret = cfsetispeed(&tio, B9600);
     if(ret != 0) {
         DEBUG_PRINTF("<%s>Set UART0 input speed fail.\n", __FUNCTION__);
         goto U0_EXIT_FAIL;
     }
     //output
-    ret = cfsetospeed(&tio, B57600);
+    ret = cfsetospeed(&tio, B9600);
     if(ret != 0) {
         DEBUG_PRINTF("<%s>Set UART0 output speed fail.\n", __FUNCTION__);
         goto U0_EXIT_FAIL;
@@ -237,13 +237,13 @@ static int uart_user_init(void)
 
     /* Setup UART baudrates. */
     //input
-    ret = cfsetispeed(&tio, B115200);
+    ret = cfsetispeed(&tio, B38400);
     if(ret != 0) {
         DEBUG_PRINTF("<%s>Set UART3 input speed fail.\n", __FUNCTION__);
         goto U3_EXIT_FAIL;
     }
     //output
-    ret = cfsetospeed(&tio, B115200);
+    ret = cfsetospeed(&tio, B38400);
     if(ret != 0) {
         DEBUG_PRINTF("<%s>Set UART3 output speed fail.\n", __FUNCTION__);
         goto U3_EXIT_FAIL;
@@ -320,13 +320,13 @@ static int uart_user2_init(void)
 
     /* Setup UART baudrates. */
     //input
-    ret = cfsetispeed(&tio, B115200);
+    ret = cfsetispeed(&tio, B38400);
     if(ret != 0) {
         DEBUG_PRINTF("<%s>Set UART4 input speed fail.\n", __FUNCTION__);
         goto U4_EXIT_FAIL;
     }
     //output
-    ret = cfsetospeed(&tio, B115200);
+    ret = cfsetospeed(&tio, B38400);
     if(ret != 0) {
         DEBUG_PRINTF("<%s>Set UART4 output speed fail.\n", __FUNCTION__);
         goto U4_EXIT_FAIL;
