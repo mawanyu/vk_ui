@@ -76,7 +76,7 @@ void thread_spi_receive(void)
                     continue;
                 }
 
-                push_data_buffer(sys_received_cache, spi_rx_data, SPI_TRANS_BYTES);
+                push_data_buffer(&sys_received_cache, spi_rx_data, SPI_TRANS_BYTES);
             }
             else {
                 DEBUG_PRINTF("<%s>Poll error.\n", __FUNCTION__);
@@ -100,7 +100,7 @@ void thread_uart_pb_receive(void)
             continue;
         }
 
-        push_data_buffer(sys_received_cache, uart_pb_rx_data, UART_PB_RX_BYTES);
+        push_data_buffer(&sys_received_cache, uart_pb_rx_data, UART_PB_RX_BYTES);
     }
 }
 

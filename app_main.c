@@ -33,6 +33,8 @@ pthread_t tid_spi_rx;
 pthread_t tid_uart_pb_rx;
 pthread_t tid_timer;
 
+char run_next = 0;
+
 /*************/
 /* Functions */
 /*************/
@@ -100,16 +102,27 @@ int main(int argc, char *argv[])
             memset((void*)&tpackdata, 0x0, sizeof(tpackdata));
             
             ret = pop_data_buffer_package(&sys_received_cache, tpack);
-            if(ret != 0) {
-                printf("[Error]Pop data from received buffer fail. (%d)\n", ret);
+            if(ret == 0) {
+                run_next = 1;
             }
-            ret = dp_decode_package(tpack, &tpackdata);
-            if(ret != 0) {
-                printf("[Error]Decode a tranmit package fail. (%d)\n", ret);
+            else if(ret == -4) {
+                printf("Not enough date in buffer.\n");
+                run_next = 0;
             }
-            ret = dp_sort_package(&tpackdata);
-            if(ret != 0) {
-                printf("[Error]Sort package data fail. (%d)\n", ret);
+            else {
+                printf("[Error]Pop data from received buffer fail. (%d)\n",ret);
+                run_next = 0;
+            }
+
+            if(1 == run_next) {
+                ret = dp_decode_package(tpack, &tpackdata);
+                if(ret != 0) {
+                    printf("[Error]Decode a tranmit package fail. (%d)\n", ret);
+                }
+                ret = dp_sort_package(&tpackdata);
+                if(ret != 0) {
+                    printf("[Error]Sort package data fail. (%d)\n", ret);
+                }
             }
         }
 

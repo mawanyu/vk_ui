@@ -30,9 +30,7 @@ int rt_airflow = 0;
 /*************/
 int dp_decode_package(char *package, DP_PACK_DATA *package_data)
 {
-    char ctemp = 0;
-    int csum = 0;
-    int i = 0, j = 0;
+    char csum = 0;
     char tpack[4];
     
     /* Check input parameter */
@@ -48,12 +46,9 @@ int dp_decode_package(char *package, DP_PACK_DATA *package_data)
     tpack[3] = *(package+3);
 
     /* Checksum package */
-    for(i=0; i<3; i++) {
-        ctemp = tpack[i];
-        for(j=0; j<8; j++) {
-            csum += (ctemp >> j) & 0x01;
-        }
-    }
+    csum = tpack[0] + tpack[1] + tpack[2];
+    csum = csum & 0x7F;
+
     if(csum != (tpack[3] & 0x7F)) {
         DEBUG_PRINTF("[INFO] Package checksum error.\n");
         return (-4);
