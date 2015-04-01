@@ -104,7 +104,7 @@ void thread_uart_pb_receive(void)
     while(1) {
         memset((void*)uart_pb_rx_data, 0, UART_PB_RX_BYTES);
 
-        ret = uart_receive_package(UART_PORT_PB, uart_pb_rx_data, UART_PB_RX_BYTES);
+        ret = uart_receive_package(UART_PORT_PB, uart_pb_rx_data);
         if(ret < 0) {
             DEBUG_PRINTF("<%s>Get data from uart of power board fail.\n", __FUNCTION__);
         }

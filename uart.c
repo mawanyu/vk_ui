@@ -64,10 +64,10 @@ static int uart_cb_init(void)
     /* and no special functions*/
     cfmakeraw(&tio);
 
-    /* Set minimum 8 bytes as read() uart returns, and there is no timeout */
+    /* Set minimum 4 bytes as read() uart returns, and there is no timeout */
     /* before read() returns. */
-    //tio.c_cc[VTIME] = 0;
-    //tio.c_cc[VMIN]  = 8;
+    tio.c_cc[VTIME] = 0;
+    tio.c_cc[VMIN]  = 4;
 
     /* Setup UART baudrates. */
     //input
@@ -147,10 +147,10 @@ static int uart_pb_init(void)
     /* and no special functions*/
     cfmakeraw(&tio);
 
-    /* Set minimum 8 bytes as read() uart returns, and there is no timeout */
+    /* Set minimum 4 bytes as read() uart returns, and there is no timeout */
     /* before read() returns. */
     tio.c_cc[VTIME] = 0;
-    tio.c_cc[VMIN]  = 8;
+    tio.c_cc[VMIN]  = 4;
 
     /* Setup UART baudrates. */
     //input
@@ -230,10 +230,10 @@ static int uart_user_init(void)
     /* and no special functions*/
     cfmakeraw(&tio);
 
-    /* Set minimum 8 bytes as read() uart returns, and there is no timeout */
+    /* Set minimum 1 byte as read() uart returns, and there is no timeout */
     /* before read() returns. */
-    //tio.c_cc[VTIME] = 0;
-    //tio.c_cc[VMIN]  = 8;
+    tio.c_cc[VTIME] = 0;
+    tio.c_cc[VMIN]  = 1;
 
     /* Setup UART baudrates. */
     //input
@@ -313,10 +313,10 @@ static int uart_user2_init(void)
     /* and no special functions*/
     cfmakeraw(&tio);
 
-    /* Set minimum 8 bytes as read() uart returns, and there is no timeout */
+    /* Set minimum 1 byte as read() uart returns, and there is no timeout */
     /* before read() returns. */
-    //tio.c_cc[VTIME] = 0;
-    //tio.c_cc[VMIN]  = 8;
+    tio.c_cc[VTIME] = 0;
+    tio.c_cc[VMIN]  = 1;
 
     /* Setup UART baudrates. */
     //input
