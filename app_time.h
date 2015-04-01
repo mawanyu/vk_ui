@@ -1,8 +1,7 @@
 /*
  * file description here
  */
-#ifndef _APP_THREAD_H_
-#define _APP_THREAD_H_
+
 /*****************/
 /* Include Files */
 /*****************/
@@ -18,8 +17,6 @@
 /*************/
 /* Functions */
 /*************/
-extern void thread_spi_receive(void);
-extern void thread_uart_pb_receive(void);
-extern void thread_knob_key(void);
-
-#endif/* _APP_THREAD_H_ */
+extern void dummy(int signum);
+extern int timer_setup(int interval,void(* handler)(int));
+extern void calculate_time(void);

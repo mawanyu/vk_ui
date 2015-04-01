@@ -30,9 +30,11 @@
 #define GPIO_VALUE_LOW          (0)
 #define GPIO_VALUE_HI           (1)
 
-#define GPIO_NUM_SPI_READY        (0)
-#define GPIO_NUM_NURSECALL      (43)
-#define GPIO_NUM_AUDIO_EN       (205)
+#define GPIO_NUM_SPI_READY          (0)
+#define GPIO_NUM_NURSECALL          (43)
+#define GPIO_NUM_AUDIO_EN           (205)
+#define GPIO_NUM_KNOB_RISING_LOCK   (148)
+#define GPIO_NUM_KNOB_FALLING_LOCK  (149)
 
 /*************/
 /* Variables */

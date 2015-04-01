@@ -381,9 +381,8 @@ int uart_receive(int uart_port, char *data, unsigned int num)
 {
     int fd;
     int ret = 0;
-    char *tbuff = NULL;
+    char rdata = 0;
     int rcnt = 0;
-    int remain = 0;
 
     /* Input parameter check. */
     if((uart_port > UART_PORT_NUM) || (NULL == data)) {
@@ -393,31 +392,18 @@ int uart_receive(int uart_port, char *data, unsigned int num)
 
     fd = uart_fd[uart_port];
 
-    /* Allocate memory for temp read buffer. */
-    tbuff = (char*)malloc(num);
-    if(NULL == tbuff) {
-        DEBUG_PRINTF("<%s>Allocate memory fail.\n", __FUNCTION__);
-        return (UART_FAIL);
-    }
-    memset(tbuff, 0, num);
-
     /* Read data. */
     //do cycle read until specified number of data have all been read
     do {
-        ret = read(fd, tbuff, num);
+        ret = read(fd, &rdata, 1);
         if(ret < 0) {
             DEBUG_PRINTF("<%s>Read data from UART%d fail.\n", __FUNCTION__, uart_port);
             return (UART_FAIL);
         }
-        rcnt += ret;
-        //get remain data number
-        ioctl(fd, FIONREAD, &remain);
-    } while(remain > 0);
 
-    /* Store read data. */
-    for(ret=0; ret<rcnt; ret++) {
-        *(data++) = *(tbuff++);
-    }
+        *(data++) = rdata;
+        rcnt++;
+    } while(rcnt < num);
     
     return rcnt;
 }
@@ -444,5 +430,54 @@ int uart_transfer(int uart_port, char *data, unsigned int num)
     }
 
     return ret;
+}
+
+/*********************************************************/
+/** 
+ * This function receive a package data (4 Bytes) from specified UART port.
+ *
+ * @param [in]     uart_port  Specify the UART port number.
+ * @param [in,out] *data      A pointer of 4 bytes memory to store received data.
+ *
+ * @return Return a int value.
+ * @retval UART_OK            Value 0, function runs normal.  
+ * @retval UART_FAIL          Value -1, read from UART fail.
+ * @retval UART_PARAM_ERROR   Value -2, input parameter error.
+ *
+ * @note Make sure that setting the minimum number of read bytes larger than 4,
+ *       and the read waiting time to unlimitted. (termios.c_cc[VMIN] = 1,
+ *       termios.c_cc[VTIME] = 0)
+ */
+/**********************************************************/
+int uart_receive_package(int uart_port, char *data)
+{
+    int fd;
+    int ret = 0;
+    char tbuff[4];
+
+    /* Input parameter check. */
+    if((uart_port > UART_PORT_NUM) || (NULL == data)) {
+        DEBUG_PRINTF("<%s>Input parameter error.\n", __FUNCTION__);
+        return (UART_PARAM_ERROR);
+    }
+
+    fd = uart_fd[uart_port];
+
+    memset(tbuff, 0, 4);
+
+    /* Read data. */
+    //do cycle read until specified number of data have all been read
+    ret = read(fd, tbuff, 4);
+    if(ret < 0) {
+        DEBUG_PRINTF("<%s>Read data from UART%d fail.\n", __FUNCTION__, uart_port);
+        return (UART_FAIL);
+    }
+
+    /* Store read data. */
+    for(ret=0; ret<4; ret++) {
+        *(data++) = tbuff[ret];
+    }
+    
+    return UART_OK;
 }
 

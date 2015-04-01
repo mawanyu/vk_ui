@@ -20,21 +20,27 @@
 /*************/
 /* Variables */
 /*************/
+//Received data cache of UI board system. Data from Control board and Power board.
 CHAR_DATA_BUFFER sys_received_cache;
 
-sem_t timer_sem;
+char patient_trigger_run = 0;   //病人自主触发标志
 
-char patient_trigger_run = 0;
-
-unsigned long cb_alarm_info = 0;
-unsigned int  pb_alarm_info = 0;
-
-unsigned long cb_sys_status = 0;
+unsigned long cb_alarm_info = 0;    //32 bits alarm info from Control board
+unsigned int  pb_alarm_info = 0;    //16 bits alarm info from Power board
+unsigned long cb_sys_status = 0;    //16 bits status info from Control board
 
 char cb_handshake = 0;              //标志控制板是否向接口板发送的握手信号
 char cb_trans_rt_data = 0;          //标志控制板是否向接口板发送实时数据
 
-struct sys_rtc_struct sys_rtc;
+struct sys_rtc_struct sys_rtc;      //system time info, based on seconds, get from Control board
+
+char knob_turn_left = 0;        //knob turn left flag
+char knob_turn_right = 0;       //knob turn right flag
+char knob_push_key = 0;         //knob key push flag
+char start_key = 0;             //start key push flag
+char mute_key = 0;              //mute key push flag
+
+int trans_pack_num = 4;    //this is default data package number of transmit between boards
 
 /*************/
 /* Functions */
@@ -211,8 +217,7 @@ FIND_PACK:
     }
     buffer->valid_num -= package_size;
 
-
+    /* Release buffer control. */
     buffer->use_flag = 0;
-
     return 0;
 }

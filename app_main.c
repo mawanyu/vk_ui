@@ -11,6 +11,7 @@
 #include "uart.h"
 #include "app_thread.h"
 #include "app_data_process.h"
+#include "app_time.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -32,16 +33,13 @@
 pthread_t tid_spi_rx;
 pthread_t tid_uart_pb_rx;
 pthread_t tid_timer;
+pthread_t tid_knob_key;
 
 char run_next = 0;
 
 /*************/
 /* Functions */
 /*************/
-char is_rn(int year);
-void calculate_time(void);
-
-
 int main(int argc, char *argv[])
 {
     int ret = 0;
@@ -88,11 +86,14 @@ int main(int argc, char *argv[])
         return (-1);
     }
 
-    ret = pthread_create(&tid_timer, NULL, (void*)&thread_timer, 0);
+    ret = pthread_create(&tid_knob_key, NULL, (void*)&thread_knob_key, 0);
     if(ret != 0) {
-        printf("[Error]Create timer thread error.\t%s\n", strerror(ret));
+        printf("[Error]Create knob and key thread error.\t%s\n", strerror(ret));
         return (-1);
     }
+
+    /* Setup 0.1s timer */
+    ret = timer_setup(100, dummy);
 
     tpack = (char*)malloc(4);
 
@@ -124,160 +125,35 @@ int main(int argc, char *argv[])
                     printf("[Error]Sort package data fail. (%d)\n", ret);
                 }
             }
-        }
+        }//while(valid_num>3)
 
         /* Calculate current time if it is updated */
         if(sys_rtc.update == 0x11) {
             calculate_time();
         }
-    };
+
+        /* Handle knob and key action */
+        if(knob_turn_left) {
+            knob_turn_left = 0;
+            printf("Knob turn left  <-\n");
+        }
+        if(knob_turn_right) {
+            knob_turn_right = 0;
+            printf("Knob turn right  ->\n");
+        }
+        if(knob_push_key) {
+            knob_push_key = 0;
+            printf("Knob push\n");
+        }
+        if(start_key) {
+            start_key = 0;
+            printf("START key push\n");
+        }
+        if(mute_key) {
+            mute_key = 0;
+            printf("MUTE key push\n");
+        }
+    }//while(1)
 }
 
-
-char is_rn(int year)
-{
-    if(((0 == year % 4) && (0 != year % 100)) || (0 == year % 400)) {
-        return 0x1;
-    }
-
-    return 0x0;
-}
-
-void calculate_time(void)
-{
-    int year = 2000;
-    int day = sys_rtc.value / (24 * 3600);
-    int month, hour, minute, second;
-
-    /* Calculate year */
-    while(day > 365) {
-        if(is_rn(year)) {
-            day -= 366;
-        }
-        else {
-            day -= 365;
-        }
-        year++;
-    }
-
-    if((day == 365) || !(is_rn(year))) {
-        year++;
-    }
-
-    /**/
-    if(is_rn(year)) {
-        if(day <= 31) {
-            month = 1;
-        }
-        else if(day <= 60 ) {
-            month = 2;
-            day -= 31;
-        }
-        else if(day <= 91) {
-            month = 3;
-            day -= 60;
-        }
-        else if ( day <= 121 ) {
-			month = 4;
-			day -= 91;
-		}
-   		else if ( day <= 152 ) {
-			month = 5;
-			day -= 121;
-		}
-		else if ( day <= 182) {
-			month = 6;
-			day -= 152;
-		}
-		else if ( day <= 213 ) {
-			month = 7;
-			day -= 182;
-		}
-		else if ( day <= 244 ) {
-			month = 8;
-			day -= 213;
-		}
-		else if ( day <= 274 ) {
-			month = 9;
-			day -= 244;
-		}
-		else if ( day <= 305 ) {
-			month = 10;
-			day -= 274;
-		}
-		else if ( day <= 335 ) {
-			month = 11;
-			day -= 305;
-		}
-		else if ( day > 335 ) {
-			month = 12;
-			day -= 335;
-		}
-    }
-    //
-    else {
-        if ( day <= 31 ) {
-			month = 1;
-		}
-		else if ( day <= 59 ) {
-			month = 2;
-			day -= 31;
-		}
-		else if ( day <= 90 ) {
-			month = 3;
-			day -= 59;
-		}
-		else if ( day <= 120 ) {
-			month = 4;
-			day -= 90;
-		}
-		else if ( day <= 151 ) {
-			month = 5;
-			day -= 120;
-		}
-		else if ( day <= 181) {
-			month = 6;
-			day -= 151;
-		}
-		else if ( day <= 212 ) {
-			month = 7;
-			day -= 181;
-		}
-		else if ( day <= 243 ) {
-			month = 8;
-			day -= 212;
-		}
-		else if ( day <= 273 ) {
-			month = 9;
-			day -= 243;
-		}
-		else if ( day <= 304 ) {
-			month = 10;
-			day -= 273;
-		}
-		else if ( day <= 334 ) {
-			month = 11;
-			day -= 304;
-		}
-		else if ( day > 334 ) {
-			month = 12;
-			day -= 334;
-		}
-    }
-
-    day = day + 1; //之前求出来的天数是已经过去的天数，现在加1表示现在日期。
-
-    /* 以下部分用于求现在的时间 */
-	hour = (sys_rtc.value / 3600 ) % 24; 
-	minute = (sys_rtc.value / 60) % 60;
-	second = sys_rtc.value % 60;
-
-	/**/
-	sys_rtc.year = year;
-	sys_rtc.mon  = month;
-	sys_rtc.day  = day;
-	sys_rtc.hour = hour;
-	sys_rtc.min  = minute;
-	sys_rtc.sec  = second;
-}
 

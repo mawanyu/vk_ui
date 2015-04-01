@@ -415,6 +415,7 @@ int gpio_initialise(void)
     unsigned int value;
     int fd = 0;
 
+    /* Setup NurseCall ouput pin */
     ret = gpio_open(GPIO_NUM_NURSECALL, &fd);
     if(ret == GPIO_OK) {
         gpio_close(fd);
@@ -433,6 +434,7 @@ int gpio_initialise(void)
         goto EXIT_NC;
     }
 
+    /* Setup Audio output enable pin */
     ret = gpio_open(GPIO_NUM_AUDIO_EN, &fd);
     if(ret == GPIO_OK) {
         gpio_close(fd);
@@ -451,6 +453,7 @@ int gpio_initialise(void)
         goto EXIT_AE;
     }
 
+    /* Setup SPI interrupt pin */
     ret = gpio_open(GPIO_NUM_SPI_READY, &fd);
     if(ret == GPIO_OK) {
         gpio_close(fd);
@@ -471,8 +474,51 @@ int gpio_initialise(void)
         goto EXIT_SR;
     }
 
-    return 0;
+    /* Setup Knob turn direction judgement pin */
+    ret = gpio_open(GPIO_NUM_KNOB_RISING_LOCK, &fd);
+    if(ret == GPIO_OK) {
+        gpio_close(fd);
+    }
+    else {
+        ret = gpio_export(GPIO_NUM_KNOB_RISING_LOCK);
+        if(ret != GPIO_OK) {
+            DEBUG_PRINTF("<%s>Export GPIO of spi ready interrupt error.\n", __FUNCTION__);
+            goto EXIT_SR;
+        }
+    }
 
+	ret = gpio_set_direction(GPIO_NUM_KNOB_RISING_LOCK, GPIO_DIRECTION_IN);
+	ret += gpio_set_edge(GPIO_NUM_KNOB_RISING_LOCK, GPIO_EDGE_NONE);
+	if(ret != GPIO_OK) {
+	    DEBUG_PRINTF("<%s>Setup knob rising lock error.\n", __FUNCTION__);
+	    goto EXIT_KR;
+	}
+
+	/* Setup Knob turn direction judgement pin */
+    ret = gpio_open(GPIO_NUM_KNOB_FALLING_LOCK, &fd);
+    if(ret == GPIO_OK) {
+        gpio_close(fd);
+    }
+    else {
+        ret = gpio_export(GPIO_NUM_KNOB_FALLING_LOCK);
+        if(ret != GPIO_OK) {
+            DEBUG_PRINTF("<%s>Export GPIO of spi ready interrupt error.\n", __FUNCTION__);
+            goto EXIT_KR;
+        }
+    }
+
+	ret = gpio_set_direction(GPIO_NUM_KNOB_FALLING_LOCK, GPIO_DIRECTION_IN);
+	ret += gpio_set_edge(GPIO_NUM_KNOB_FALLING_LOCK, GPIO_EDGE_NONE);
+	if(ret != GPIO_OK) {
+	    DEBUG_PRINTF("<%s>Setup knob falling lock error.\n", __FUNCTION__);
+	    goto EXIT_KF;
+	}
+
+    return 0;
+EXIT_KF:
+    //gpio_unexport(GPIO_NUM_KNOB_FALLING_LOCK);
+EXIT_KR:
+    //gpio_unexport(GPIO_NUM_KNOB_RISING_LOCK);
 EXIT_SR:
     //gpio_unexport(GPIO_NUM_SPI_READY);
 EXIT_AE:

@@ -38,9 +38,6 @@ typedef struct {
 /* Buffer for received data from spi and uart. */
 extern CHAR_DATA_BUFFER sys_received_cache;
 
-/* Timer semaphore. Used by timer thread and alarm sub function. */
-extern sem_t timer_sem;
-
 extern char patient_trigger_run;
 
 extern unsigned long cb_alarm_info;
@@ -63,6 +60,14 @@ struct sys_rtc_struct {
 };
 
 extern struct sys_rtc_struct sys_rtc;
+
+extern char knob_turn_left;
+extern char knob_turn_right;
+extern char knob_push_key;
+extern char start_key;
+extern char mute_key;
+
+extern int trans_pack_num;
 
 /*************/
 /* Functions */

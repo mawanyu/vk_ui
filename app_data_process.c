@@ -217,6 +217,7 @@ int dp_sort_package(DP_PACK_DATA *package_data)
             break;
     }
 
+    return 0;
 }
 
 

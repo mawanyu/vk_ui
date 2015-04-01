@@ -34,6 +34,7 @@
 extern int uart_initialise(void);
 extern int uart_transfer(int uart_port,char * data,unsigned int num);
 extern int uart_receive(int uart_port,char * data,unsigned int num);
+extern int uart_receive_package(int uart_port,char * data);
 
 #endif/*_UART_H_*/
 
