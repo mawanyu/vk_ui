@@ -32,6 +32,7 @@
 #define SPI_TRANS_BYTES         (8)
 
 #define UART_PB_RX_BYTES        (4)
+#define UART_CB_RX_BYTES        (4)
 
 #define KNOB_TURN_KEYCODE       (KEY_1)
 #define KNOB_PUSH_KEYCODE       (KEY_2)
@@ -44,6 +45,7 @@
 /*************/
 /* Variables */
 /*************/
+struct uart_cb_loopback_struct uart_cb_loopback;
 
 /*************/
 /* Functions */
@@ -114,6 +116,24 @@ void thread_uart_pb_receive(void)
     }
 }
 
+
+void thread_uart_cb_receive(void)
+{
+    int ret = 0;
+    //char uart_pb_rx_data[UART_PB_RX_BYTES];
+
+    while(1) {
+        //memset((void*)uart_cb_loopback.data, 0, 4);
+
+        ret = uart_receive_package(UART_PORT_CB, uart_cb_loopback.data);
+        if(ret < 0) {
+            DEBUG_PRINTF("<%s>Get data from uart of power board fail.\n", __FUNCTION__);
+        }
+        else {
+            uart_cb_loopback.flag = 1;
+        }
+    }
+}
 
 void thread_knob_key(void)
 {

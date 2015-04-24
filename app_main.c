@@ -21,6 +21,7 @@
 #include <sys/types.h>
 #include <fcntl.h>
 #include <sys/ioctl.h>
+#include <signal.h>
 
 /********************/
 /* Defines & Macros */
@@ -34,12 +35,16 @@ pthread_t tid_spi_rx;
 pthread_t tid_uart_pb_rx;
 pthread_t tid_timer;
 pthread_t tid_knob_key;
+pthread_t tid_uart_cb_rx;
 
 char run_next = 0;
 
 /*************/
 /* Functions */
 /*************/
+void send_command_to_cb(int arg);
+
+
 int main(int argc, char *argv[])
 {
     int ret = 0;
@@ -92,8 +97,15 @@ int main(int argc, char *argv[])
         return (-1);
     }
 
+    ret = pthread_create(&tid_uart_cb_rx, NULL, (void*)&thread_uart_cb_receive, 0);
+    if(ret != 0) {
+        printf("[Error]Create UART control board receive thread error.\t%s\n", strerror(ret));
+        return (-1);
+    }
+
     /* Setup 0.1s timer */
-    ret = timer_setup(100, dummy);
+    //ret = timer_setup(100, dummy);
+    ret = timer_setup(1000, (__sighandler_t)send_command_to_cb);
 
     tpack = (char*)malloc(4);
 
@@ -153,7 +165,30 @@ int main(int argc, char *argv[])
             mute_key = 0;
             printf("MUTE key push\n");
         }
+
+        if(uart_cb_loopback.flag == 1) {
+            int i;
+            for(i=0; i<4; i++) {
+                printf("%d  ", uart_cb_loopback.data[i]);
+            }
+            printf("\n");
+            uart_cb_loopback.flag = 0;
+        }
     }//while(1)
 }
 
+extern int dummy_cnt;
+void send_command_to_cb(int arg)
+{
+    char cb_trans[4];
+    
+    cb_trans[0] = 0xab;
+    cb_trans[1] = 0xcd;
+    cb_trans[2] = 0xef;
+    cb_trans[3] = dummy_cnt++;
+    memset((void*)uart_cb_loopback.data, 0, 4);
+    uart_cb_loopback.flag = 0;
+    uart_transfer(UART_PORT_CB, cb_trans, 4);
 
+    signal(SIGALRM, (__sighandler_t)send_command_to_cb);
+}
